@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mohsen Accounting</title>
+<style>
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F2F5;--panel:#fff;--sidebar:#1A2236;--sh:#253047;--sa:#2E3D5B;
+  --acc:#2563EB;--acc2:#1D4ED8;--grn:#16A34A;--red:#DC2626;--org:#D97706;--pur:#7C3AED;
+  --txt:#111827;--tx2:#6B7280;--tx3:#9CA3AF;--bdr:#E5E7EB;--bdr2:#D1D5DB;
+  --inp:#F9FAFB;--sh1:0 1px 3px rgba(0,0,0,.08);--sh2:0 4px 20px rgba(0,0,0,.13);
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;background:var(--bg);color:var(--txt);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.topbar{height:46px;background:var(--sidebar);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;border-bottom:1px solid #0d1526}
+.tlogo{color:#fff;font-size:15px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+.tlogo span{font-size:10px;font-weight:400;color:#8B9DC8;background:#253047;padding:2px 7px;border-radius:4px}
+.tco{font-size:11px;color:#60A5FA;font-weight:600;margin-left:8px}
+.tright{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tright select{background:#253047;border:none;color:#8B9DC8;font-size:11px;padding:4px 8px;border-radius:4px;cursor:pointer}
+.tsave{font-size:10px;color:#4ADE80;opacity:0;transition:opacity .5s;white-space:nowrap}
+.tdb{display:inline-flex;align-items:center;gap:4px;width:8px;height:8px;border-radius:50%;background:#4ADE80;margin-right:4px;flex-shrink:0}
+.tdb.red{background:#EF4444}.tdb.org{background:#F59E0B}
+.app{display:flex;flex:1;overflow:hidden}
+.sidebar{width:208px;min-width:208px;background:var(--sidebar);display:flex;flex-direction:column;overflow-y:auto}
+.nsg{padding:8px 0 2px}
+.nsl{font-size:9px;font-weight:700;color:#3D4F6E;text-transform:uppercase;letter-spacing:1px;padding:8px 16px 4px}
+.ni{display:flex;align-items:center;gap:9px;padding:7px 16px;color:#8B9DC8;cursor:pointer;font-size:12px;transition:all .12s;border-left:3px solid transparent;user-select:none}
+.ni svg{width:14px;height:14px;flex-shrink:0;opacity:.7}
+.ni:hover{background:var(--sh);color:#CBD5E1}
+.ni.active{background:var(--sa);color:#fff;border-left-color:var(--acc);font-weight:600}
+.ni.active svg{opacity:1}
+.nbadge{margin-left:auto;background:#DC2626;color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center}
+.main{flex:1;overflow-y:auto;background:var(--bg)}
+.page{display:none;padding:20px 24px;min-height:100%}
+.page.active{display:block}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.pt{font-size:18px;font-weight:700}.ps{font-size:11px;color:var(--tx2);margin-top:2px}
+.br{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:6px;border:1px solid var(--bdr2);background:#fff;color:var(--txt);font-size:12px;font-weight:500;cursor:pointer;transition:all .12s;font-family:inherit;white-space:nowrap}
+.btn:hover{background:var(--bg)}.btn:disabled{opacity:.5;cursor:default}
+.btn.pri{background:var(--acc);color:#fff;border-color:var(--acc)}.btn.pri:hover{background:var(--acc2)}
+.btn.suc{background:var(--grn);color:#fff;border-color:var(--grn)}.btn.suc:hover{background:#15803D}
+.btn.warn{background:var(--org);color:#fff;border-color:var(--org)}
+.btn.dan{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--tx2)}.btn.ghost:hover{background:var(--bg)}
+.btn.sm{padding:4px 9px;font-size:11px}.btn.icon{padding:5px;width:28px;height:28px;justify-content:center}
+.btn svg{width:13px;height:13px}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:var(--panel);border-radius:8px;padding:13px 15px;border:1px solid var(--bdr);box-shadow:var(--sh1);position:relative;overflow:hidden}
+.klbl{font-size:10px;color:var(--tx2);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.kval{font-size:21px;font-weight:700;color:var(--txt);line-height:1}
+.kval.g{color:var(--grn)}.kval.r{color:var(--red)}.kval.b{color:var(--acc)}.kval.o{color:var(--org)}
+.ksub{font-size:10px;color:var(--tx3);margin-top:3px}
+.kico{position:absolute;right:12px;top:12px;width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center}
+.kico svg{width:15px;height:15px}
+.ki-b{background:#EFF6FF;color:var(--acc)}.ki-g{background:#F0FDF4;color:var(--grn)}
+.ki-r{background:#FEF2F2;color:var(--red)}.ki-o{background:#FFFBEB;color:var(--org)}.ki-p{background:#F5F3FF;color:var(--pur)}
+.card{background:var(--panel);border-radius:8px;border:1px solid var(--bdr);box-shadow:var(--sh1);overflow:hidden;margin-bottom:14px}
+.ch{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;border-bottom:1px solid var(--bdr);background:#FAFAFA}
+.ct{font-size:12px;font-weight:600}.cs{font-size:10px;color:var(--tx2);margin-top:1px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:#F9FAFB;padding:8px 11px;text-align:left;font-size:10px;font-weight:700;color:var(--tx2);border-bottom:1px solid var(--bdr);white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
+tbody td{padding:8px 11px;border-bottom:1px solid var(--bdr);color:var(--txt);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#F8FAFC}
+.erow td{text-align:center;color:var(--tx3);padding:28px!important;font-size:12px}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap}
+.bp{background:#DCFCE7;color:#166534}.bn{background:#FEF9C3;color:#854D0E}.bpa{background:#DBEAFE;color:#1E40AF}
+.bo{background:#FEE2E2;color:#991B1B}.bd{background:#F3F4F6;color:#374151}
+.bok{background:#DCFCE7;color:#166534}.blow{background:#FEF9C3;color:#854D0E}.bout{background:#FEE2E2;color:#991B1B}
+.bcur{background:#EDE9FE;color:#5B21B6}.bexp{background:#FCE7F3;color:#831843}
+.dot{width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block}
+.ov{display:none;position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.ov.open{display:flex}
+.modal{background:var(--panel);border-radius:10px;width:520px;max-width:96vw;max-height:90vh;overflow:hidden;box-shadow:var(--sh2);display:flex;flex-direction:column}
+.mh{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;background:#FAFAFA;flex-shrink:0}
+.mh h3{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+.mh h3 svg{width:15px;height:15px;color:var(--acc)}
+.mb{padding:16px 18px;overflow-y:auto;flex:1}
+.mf{padding:11px 18px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:7px;background:#FAFAFA;flex-shrink:0}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:10px;font-weight:700;color:var(--tx2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
+.fg input,.fg select,.fg textarea{width:100%;padding:7px 9px;border:1px solid var(--bdr2);border-radius:6px;background:var(--inp);color:var(--txt);font-size:12px;font-family:inherit;transition:border .12s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--acc);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.fg input[readonly]{background:#F3F4F6;color:var(--tx2)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fsec{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.8px;padding:4px 0 8px;border-bottom:1px solid var(--bdr);margin-bottom:12px}
+.tabs{display:flex;border-bottom:2px solid var(--bdr);margin-bottom:14px}
+.tab{padding:8px 16px;cursor:pointer;font-size:12px;color:var(--tx2);border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:500}
+.tab:hover{color:var(--txt)}.tab.active{color:var(--acc);border-bottom-color:var(--acc);font-weight:700}
+.toast{position:fixed;bottom:22px;right:22px;background:#111827;color:#fff;padding:9px 16px;border-radius:8px;font-size:12px;z-index:999;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;display:flex;align-items:center;gap:7px;box-shadow:var(--sh2)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast svg{width:13px;height:13px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--bdr);border-top-color:var(--acc);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.8);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-size:13px;color:var(--tx2)}
+.loading-overlay.show{display:flex}
+.loading-overlay .spinner{width:28px;height:28px;border-width:3px}
+code{font-size:10px;background:#F3F4F6;padding:2px 5px;border-radius:3px;font-family:monospace}
+
+</style>
+</head>
+<body>
+
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loader">
+  <div class="spinner"></div>
+  <span>Connecting to database…</span>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tlogo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px;color:#60A5FA"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    Mohsen <span>Accounting</span>
+  </div>
+  <span class="tco" id="tco">Mohsen</span>
+  <div class="tright">
+    <span id="dbstatus" style="display:flex;align-items:center;font-size:10px;color:#8B9DC8"><span class="tdb org" id="dbdot"></span><span id="dbtext">Connecting…</span></span>
+    <select id="base-currency" onchange="changeCurrency()">
+      <option value="USD">$ USD</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option>
+      <option value="IDR">Rp IDR</option><option value="BRL">R$ BRL</option><option value="JPY">¥ JPY</option>
+      <option value="CNY">¥ CNY</option><option value="AED">د.إ AED</option><option value="SGD">S$ SGD</option>
+      <option value="ZAR">R ZAR</option><option value="NGN">₦ NGN</option><option value="KES">KSh KES</option>
+    </select>
+    <span class="tsave" id="tsave">✓ Saved</span>
+    <button class="btn sm" onclick="openModal('mo-settings')" style="color:#8B9DC8;background:#253047;border-color:#3D4E6B;font-size:11px">⚙ Settings</button>
+  </div>
+</div>
+
+<div class="app">
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="nsg">
+    <div class="nsl">Overview</div>
+    <div class="ni active" onclick="nav(this,'dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Dashboard</span></div>
+  </div>
+  <div class="nsg">
+    <div class="nsl">Sales</div>
+    <div class="ni" onclick="nav(this,'customers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.87"/></svg><span>Customers</span></div>
+    <div class="ni" onclick="nav(this,'invoices')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Invoices</span><span class="nbadge" id="nb-inv">0</span></div>
+    <div class="ni" onclick="nav(this,'receipts')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Receipts</span></div>
+  </div>
+  <div class="nsg">
+    <div class="nsl">Purchases</div>
+    <div class="ni" onclick="nav(this,'suppliers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg><span>Suppliers</span></div>
+    <div class="ni" onclick="nav(this,'purchases')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><span>Purchases</span><span class="nbadge" id="nb-po">0</span></div>
+    <div class="ni" onclick="nav(this,'payments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><span>Payments</span></div>
+  </div>
+  <div class="nsg">
+    <div class="nsl">Inventory</div>
+    <div class="ni" onclick="nav(this,'stock')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span>Inventory</span></div>
+  </div>
+  <div class="nsg">
+    <div class="nsl">Finance</div>
+    <div class="ni" onclick="nav(this,'expenses')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Expenses</span></div>
+    <div class="ni" onclick="nav(this,'capital')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg><span>Capital</span></div>
+    <div class="ni" onclick="nav(this,'reports')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Reports</span></div>
+    <div class="ni" onclick="nav(this,'imei')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>IMEI Search</span></div>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="ph"><div><div class="pt">Dashboard</div><div class="ps" id="dash-date"></div></div>
+  <div class="br" style="flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:5px 10px">
+      <span style="font-size:11px;color:var(--tx2);font-weight:600">From:</span>
+      <input type="date" id="dash-from" style="padding:3px 6px;border:1px solid var(--bdr2);border-radius:4px;font-size:11px;color:var(--txt);background:var(--inp);cursor:pointer">
+      <span style="color:var(--tx2);font-size:11px">To:</span>
+      <input type="date" id="dash-to" style="padding:3px 6px;border:1px solid var(--bdr2);border-radius:4px;font-size:11px;color:var(--txt);background:var(--inp);cursor:pointer">
+      <button onclick="applyDashFilter()" style="background:var(--acc);border:none;border-radius:4px;cursor:pointer;color:#fff;font-size:11px;font-weight:600;padding:4px 10px">🔍 Search</button>
+      <button onclick="clearDashDates()" style="background:#F3F4F6;border:1px solid var(--bdr);border-radius:4px;cursor:pointer;color:var(--tx2);font-size:10px;padding:3px 7px">✕ Clear</button>
+    </div>
+    <button class="btn pri" onclick="nav(document.querySelector('.ni[onclick*=invoices]'),'invoices');setTimeout(()=>openModal('mo-invoice'),100)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New invoice</button>
+  </div></div>
+  <div id="stock-warning-banner" style="display:none;align-items:flex-start;gap:10px;background:#FEF3C7;border:1px solid #FBBF24;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#92400E">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span></span>
+  </div>
+  <div class="kgrid">
+    <div class="kpi"><div class="kico ki-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="klbl">Revenue</div><div class="kval b" id="k-rev">—</div><div class="ksub">Total invoiced</div></div>
+    <div class="kpi"><div class="kico ki-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="klbl">Net profit</div><div class="kval g" id="k-net">—</div><div class="ksub">After expenses</div></div>
+    <div class="kpi"><div class="kico ki-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="klbl">Receivables</div><div class="kval r" id="k-recv">—</div><div class="ksub">Outstanding</div></div>
+    <div class="kpi"><div class="kico ki-o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="klbl">Payables</div><div class="kval o" id="k-pay">—</div><div class="ksub">Owed to suppliers</div></div>
+    <div class="kpi"><div class="kico ki-p"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><div class="klbl">Stock value</div><div class="kval" id="k-stk">—</div><div class="ksub" id="k-stkn">0 products</div></div>
+    <div class="kpi"><div class="kico ki-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="klbl">Overdue</div><div class="kval r" id="k-ov">0</div><div class="ksub">Invoices overdue</div></div>
+    <div class="kpi"><div class="kico ki-g"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg></div><div class="klbl">Available cash</div><div class="kval g" id="k-cash">—</div><div class="ksub">Capital + receipts − payments − expenses</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px">
+    <div class="card"><div class="ch"><div><div class="ct">Recent transactions</div></div></div>
+    <div class="tw"><table><thead><tr><th>Type</th><th>Ref</th><th>Party</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody id="dash-tb"></tbody></table></div></div>
+    <div class="card"><div class="ch"><div class="ct">Low stock alerts</div></div><div id="dash-ls" style="padding:10px"></div></div>
+  </div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="page" id="page-customers">
+  <div class="ph"><div><div class="pt">Customers</div><div class="ps">Manage clients &amp; balances</div></div>
+  <button class="btn pri" onclick="openModal('mo-customer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add customer</button></div>
+  <div class="card"><div class="ch"><div class="ct">Customer ledger</div><input placeholder="Search…" oninput="ftbl('cust-tb',this.value)" style="padding:5px 9px;border:1px solid var(--bdr2);border-radius:5px;font-size:11px;width:160px"></div>
+  <div class="tw"><table><thead><tr><th>#</th><th>Customer</th><th>Phone</th><th>Currency</th><th>Invoiced</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead><tbody id="cust-tb"></tbody></table></div></div>
+</div>
+
+<!-- INVOICES -->
+<div class="page" id="page-invoices">
+  <div class="ph"><div><div class="pt">Sales Invoices</div><div class="ps">Create &amp; manage customer invoices</div></div>
+  <div class="br" style="flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--bdr);border-radius:6px;padding:5px 10px">
+      <span style="font-size:11px;color:var(--tx2);font-weight:600">From:</span>
+      <input type="date" id="inv-from" style="padding:3px 6px;border:1px solid var(--bdr2);border-radius:4px;font-size:11px;color:var(--txt);background:var(--inp);cursor:pointer">
+      <span style="color:var(--tx2);font-size:11px">To:</span>
+      <input type="date" id="inv-to" style="padding:3px 6px;border:1px solid var(--bdr2);border-radius:4px;font-size:11px;color:var(--txt);background:var(--inp);cursor:pointer">
+      <button onclick="applyInvFilter()" style="background:var(--acc);border:none;border-radius:4px;cursor:pointer;color:#fff;font-size:11px;font-weight:600;padding:4px 10px">🔍 Search</button>
+      <button onclick="clearInvDates()" style="background:#F3F4F6;border:1px solid var(--bdr);border-radius:4px;cursor:pointer;color:var(--tx2);font-size:10px;padding:3px 7px">✕ Clear</button>
+    </div>
+    <button class="btn sm" onclick="fInv('all')">All</button>
+    <button class="btn sm" onclick="fInv('pending')">Pending</button>
+    <button class="btn sm" onclick="fInv('partial')">Partial</button>
+    <button class="btn pri" onclick="openModal('mo-invoice')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New invoice</button>
+  </div></div>
+  <div class="card"><div class="ch"><div class="ct">Invoice list</div><div id="inv-summary" style="font-size:11px;color:var(--tx2)"></div></div>
+  <div class="tw"><table><thead><tr><th>INV #</th><th>Customer</th><th>Date</th><th>Due</th><th>Cur</th><th>Total</th><th>Paid</th><th>Balance</th><th>Profit/Loss</th><th>Status</th><th>Actions</th></tr></thead><tbody id="inv-tb"></tbody></table></div></div>
+</div>
+
+<!-- RECEIPTS -->
+<div class="page" id="page-receipts">
+  <div class="ph"><div><div class="pt">Customer Receipts</div><div class="ps">Payments received from customers</div></div>
+  <button class="btn suc" onclick="openModal('mo-receipt')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Record receipt</button></div>
+  <div class="card"><div class="ch"><div class="ct">Receipts ledger</div></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Customer</th><th>Invoice ref</th><th>Currency</th><th>Amount</th><th>Method</th><th>Note</th><th></th></tr></thead><tbody id="rcpt-tb"></tbody></table></div></div>
+</div>
+
+<!-- SUPPLIERS -->
+<div class="page" id="page-suppliers">
+  <div class="ph"><div><div class="pt">Suppliers</div><div class="ps">Manage vendors &amp; balances</div></div>
+  <div class="br">
+    <button class="btn warn" onclick="openModal('mo-suppadj')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Balance Adjustment</button>
+    <button class="btn pri" onclick="openModal('mo-supplier')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add supplier</button>
+  </div></div>
+  <div class="card"><div class="ch"><div class="ct">Supplier ledger</div><input placeholder="Search…" oninput="ftbl('supp-tb',this.value)" style="padding:5px 9px;border:1px solid var(--bdr2);border-radius:5px;font-size:11px;width:160px"></div>
+  <div class="tw"><table><thead><tr><th>#</th><th>Supplier</th><th>Phone</th><th>Currency</th><th>Purchased</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead><tbody id="supp-tb"></tbody></table></div></div>
+</div>
+
+<!-- SUPPLIER BALANCE ADJUSTMENT -->
+<div class="ov" id="mo-suppadj"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Supplier Balance Adjustment</h3><button class="btn icon ghost" onclick="closeModal('mo-suppadj')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:10px;margin-bottom:14px;font-size:11px;color:#92400E">
+    Use this to correct a supplier's balance to match their official records (e.g. after reconciling with the supplier directly). This adds a balancing entry — it does not delete any purchase or payment history.
+  </div>
+  <div class="fg"><label>Supplier *</label><select id="sadj-sup" onchange="loadSuppAdjCurrent()"><option value="">Select supplier...</option></select></div>
+  <div class="fr">
+    <div class="fg"><label>Current balance owed (system)</label><input id="sadj-current" type="number" readonly style="background:#F3F4F6"></div>
+    <div class="fg"><label>Correct balance owed *</label><input id="sadj-new" type="number" min="0" oninput="calcSuppAdjDiff()"></div>
+  </div>
+  <div class="fg">
+    <label>Difference</label>
+    <div id="sadj-diff" style="padding:8px 10px;background:#F9FAFB;border:1px solid var(--bdr);border-radius:6px;font-weight:700;font-size:14px">—</div>
+  </div>
+  <div class="fg"><label>Reason *</label><select id="sadj-reason">
+    <option>Reconciled with supplier directly</option>
+    <option>Missing purchase recovered manually</option>
+    <option>Duplicate purchase removed</option>
+    <option>Currency/exchange rate correction</option>
+    <option>Data entry error</option>
+    <option>System bug correction</option>
+    <option>Other</option>
+  </select></div>
+  <div class="fg"><label>Notes</label><textarea id="sadj-notes" rows="2" placeholder="Additional details..."></textarea></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-suppadj')">Cancel</button><button class="btn warn" onclick="saveSuppAdjustment()">Apply Adjustment</button></div>
+</div></div>
+
+<!-- PURCHASES -->
+<div class="page" id="page-purchases">
+  <div class="ph"><div><div class="pt">Purchase Orders</div><div class="ps">Goods received from suppliers</div></div>
+  <button class="btn pri" onclick="openModal('mo-purchase')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New purchase</button></div>
+  <div class="card"><div class="ch"><div class="ct">Purchase orders</div></div>
+  <div class="tw"><table><thead><tr><th>PO #</th><th>Supplier</th><th>Date</th><th>Currency</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead><tbody id="po-tb"></tbody></table></div></div>
+</div>
+
+<!-- PAYMENTS -->
+<div class="page" id="page-payments">
+  <div class="ph"><div><div class="pt">Supplier Payments</div><div class="ps">Payments made to suppliers</div></div>
+  <button class="btn warn" onclick="openModal('mo-payment')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Record payment</button></div>
+  <div class="card"><div class="ch"><div class="ct">Payments ledger</div></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Supplier</th><th>PO ref</th><th>Currency</th><th>Amount</th><th>Method</th><th>Note</th><th></th></tr></thead><tbody id="pay-tb"></tbody></table></div></div>
+</div>
+
+<!-- STOCK -->
+<div class="page" id="page-stock">
+  <div class="ph"><div><div class="pt">Inventory</div><div class="ps">Products, stock levels &amp; valuation</div></div>
+  <div class="br">
+    <button class="btn" onclick="openModal('mo-adj-history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Adjustment History</button>
+    <button class="btn" onclick="exportCSV()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
+    <button class="btn warn" onclick="openModal('mo-stockadj')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Stock Adjustment</button>
+    <button class="btn pri" onclick="openModal('mo-stock')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add product</button>
+  </div></div>
+  <div class="kgrid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="kpi"><div class="klbl">Products</div><div class="kval" id="sk-n">0</div></div>
+    <div class="kpi"><div class="klbl">Stock value (cost)</div><div class="kval b" id="sk-v">—</div></div>
+    <div class="kpi"><div class="klbl">Retail value</div><div class="kval g" id="sk-r">—</div></div>
+    <div class="kpi"><div class="klbl">Low stock</div><div class="kval r" id="sk-l">0</div></div>
+  </div>
+  <div class="card"><div class="ch"><div class="ct">Product list</div><input placeholder="Search…" oninput="ftbl('stock-tb',this.value)" style="padding:5px 9px;border:1px solid var(--bdr2);border-radius:5px;font-size:11px;width:160px"></div>
+  <div class="tw"><table><thead><tr><th>Code</th><th>Product</th><th>Category</th><th>Qty</th><th>Reorder</th><th>Cost</th><th>Price</th><th>Value</th><th>Margin</th><th>Status</th></tr></thead><tbody id="stock-tb"></tbody></table></div></div>
+</div>
+
+<!-- EXPENSES -->
+<div class="page" id="page-expenses">
+  <div class="ph"><div><div class="pt">Expenses</div><div class="ps">Operating costs &amp; overheads</div></div>
+  <button class="btn pri" onclick="openModal('mo-expense')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add expense</button></div>
+  <div class="kgrid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi"><div class="klbl">Total expenses</div><div class="kval r" id="ex-t">—</div></div>
+    <div class="kpi"><div class="klbl">This month</div><div class="kval r" id="ex-m">—</div></div>
+    <div class="kpi"><div class="klbl">Categories</div><div class="kval" id="ex-c">0</div></div>
+  </div>
+  <div class="card"><div class="ch"><div class="ct">Expense register</div></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Payee</th><th>Currency</th><th>Amount</th><th></th></tr></thead><tbody id="exp-tb"></tbody></table></div></div>
+</div>
+
+<!-- CAPITAL -->
+<div class="page" id="page-capital">
+  <div class="ph"><div><div class="pt">Capital</div><div class="ps">Owner investment &amp; withdrawals</div></div>
+  <button class="btn pri" onclick="openModal('mo-capital')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add capital entry</button></div>
+  <div class="kgrid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi"><div class="klbl">Total injected</div><div class="kval g" id="cap-in">—</div></div>
+    <div class="kpi"><div class="klbl">Total withdrawn</div><div class="kval r" id="cap-out">—</div></div>
+    <div class="kpi"><div class="klbl">Net capital</div><div class="kval b" id="cap-net">—</div></div>
+  </div>
+  <div class="card"><div class="ch"><div class="ct">Capital ledger</div></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Type</th><th>Note</th><th>Currency</th><th>Amount</th><th></th></tr></thead><tbody id="cap-tb"></tbody></table></div></div>
+</div>
+
+<!-- REPORTS -->
+<div class="page" id="page-reports">
+  <div class="ph"><div><div class="pt">Financial Reports</div><div class="ps">Balance sheet, P&L and ageing</div></div>
+  <button class="btn suc" onclick="printReport()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print / PDF</button></div>
+  <div class="tabs">
+    <div class="tab active" onclick="rptTab(this,'rpt-bs')">Balance Sheet</div>
+    <div class="tab" onclick="rptTab(this,'rpt-pl')">Profit &amp; Loss</div>
+    <div class="tab" onclick="rptTab(this,'rpt-ar')">Receivables</div>
+    <div class="tab" onclick="rptTab(this,'rpt-ap')">Payables</div>
+    <div class="tab" onclick="rptTab(this,'rpt-trial')">Trial Balance</div>
+    <div class="tab" onclick="rptTab(this,'rpt-period')">📊 Period Analysis</div>
+  </div>
+  <div id="rpt-bs"></div><div id="rpt-pl" style="display:none"></div>
+  <div id="rpt-ar" style="display:none"></div><div id="rpt-ap" style="display:none"></div>
+  <div id="rpt-trial" style="display:none"></div>
+  <div id="rpt-period" style="display:none">
+    <!-- Date filter -->
+    <div class="card" style="margin-bottom:14px">
+      <div style="padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;color:var(--tx2)">Period:</span>
+        <input type="date" id="period-from" style="padding:5px 8px;border:1px solid var(--bdr2);border-radius:5px;font-size:12px;color:var(--txt);background:var(--inp)">
+        <span style="font-size:12px;color:var(--tx2)">to</span>
+        <input type="date" id="period-to" style="padding:5px 8px;border:1px solid var(--bdr2);border-radius:5px;font-size:12px;color:var(--txt);background:var(--inp)">
+        <button onclick="runPeriodAnalysis()" class="btn pri" style="font-size:12px">🔍 Generate Report</button>
+        <button onclick="clearPeriodAnalysis()" style="background:#F3F4F6;border:1px solid var(--bdr);border-radius:5px;padding:5px 10px;font-size:11px;cursor:pointer;color:var(--tx2)">✕ Clear</button>
+      </div>
+    </div>
+    <div id="period-report-content">
+      <div style="text-align:center;padding:40px;color:var(--tx2);font-size:13px">Select a date range and click Generate Report</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span id="toast-msg"></span></div>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- SETTINGS -->
+<div class="ov" id="mo-settings"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Company Settings</h3><button class="btn icon ghost" onclick="closeModal('mo-settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fg"><label>Company name</label><input id="set-co" value="Mohsen"></div>
+  <div class="fr"><div class="fg"><label>Address</label><input id="set-addr" placeholder="Company address"></div><div class="fg"><label>Phone</label><input id="set-ph" placeholder="+1 555 0000"></div></div>
+  <div class="fr"><div class="fg"><label>Email</label><input id="set-em" placeholder="info@mohsen.com"></div><div class="fg"><label>VAT / Tax number</label><input id="set-vat" placeholder="Optional"></div></div>
+  <div class="fr"><div class="fg"><label>Invoice prefix</label><input id="set-ip" value="INV-"></div><div class="fg"><label>Payment terms (days)</label><input id="set-pt" type="number" value="30"></div></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-settings')">Cancel</button><button class="btn pri" onclick="saveSettings()">Save settings</button></div>
+</div></div>
+
+<!-- CUSTOMER -->
+<div class="ov" id="mo-customer"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/></svg>Add Customer</h3><button class="btn icon ghost" onclick="closeModal('mo-customer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fg"><label>Full name / Company *</label><input id="cl-name" placeholder="e.g. John Smith or ABC Ltd"></div>
+  <div class="fr"><div class="fg"><label>Email</label><input id="cl-email" type="email" placeholder="email@example.com"></div><div class="fg"><label>Phone</label><input id="cl-phone" placeholder="+1 555 0000"></div></div>
+  <div class="fg"><label>Address</label><input id="cl-addr" placeholder="Street, city, country"></div>
+  <div class="fr"><div class="fg"><label>Currency</label><select id="cl-cur"></select></div><div class="fg"><label>Opening balance (owed to us)</label><input id="cl-bal" type="number" placeholder="0.00" min="0"></div></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-customer')">Cancel</button><button class="btn pri" onclick="saveCust()">Save customer</button></div>
+</div></div>
+
+<!-- SUPPLIER -->
+<div class="ov" id="mo-supplier"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Add Supplier</h3><button class="btn icon ghost" onclick="closeModal('mo-supplier')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fg"><label>Supplier name *</label><input id="su-name" placeholder="e.g. Global Supplies Ltd"></div>
+  <div class="fr"><div class="fg"><label>Email</label><input id="su-email" type="email" placeholder="email@example.com"></div><div class="fg"><label>Phone</label><input id="su-phone" placeholder="+1 555 0000"></div></div>
+  <div class="fg"><label>Address</label><input id="su-addr" placeholder="Street, city, country"></div>
+  <div class="fr"><div class="fg"><label>Currency</label><select id="su-cur"></select></div><div class="fg"><label>Opening balance (we owe)</label><input id="su-bal" type="number" placeholder="0.00" min="0"></div></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-supplier')">Cancel</button><button class="btn pri" onclick="saveSupp()">Save supplier</button></div>
+</div></div>
+
+<!-- PRODUCT -->
+<div class="ov" id="mo-stock"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Add Product</h3><button class="btn icon ghost" onclick="closeModal('mo-stock')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fr"><div class="fg"><label>Code *</label><input id="sk-code" placeholder="PRD-001"></div><div class="fg"><label>Category</label><input id="sk-cat" placeholder="e.g. Electronics"></div></div>
+  <div class="fg"><label>Product name *</label><input id="sk-name" placeholder="Full product name"></div>
+  <div class="fr"><div class="fg"><label>Unit of measure</label><select id="sk-uom">
+  <option>Pcs</option>
+  <option>Unit</option>
+  <option>Each</option>
+  <option>Box</option>
+  <option>Carton</option>
+  <option>Pack</option>
+  <option>Set</option>
+  <option>Pair</option>
+  <option>Dozen</option>
+  <option>Kg</option>
+  <option>Gram</option>
+  <option>Litre</option>
+  <option>Metre</option>
+  <option>Roll</option>
+  <option>Bag</option>
+</select></div><div class="fg"><label>Opening quantity</label><input id="sk-qty" type="number" placeholder="0" min="0"></div></div>
+  <div class="fr"><div class="fg"><label>Reorder level</label><input id="sk-reorder" type="number" placeholder="10" min="0"></div><div class="fg"><label>&nbsp;</label><div style="height:29px"></div></div></div>
+  <div class="fr"><div class="fg"><label>Cost price</label><input id="sk-cost" type="number" placeholder="0.00" min="0"></div><div class="fg"><label>Selling price</label><input id="sk-price" type="number" placeholder="0.00" min="0"></div></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-stock')">Cancel</button><button class="btn pri" onclick="saveStock()">Add product</button></div>
+</div></div>
+
+<!-- STOCK ADJUSTMENT -->
+<div class="ov" id="mo-stockadj"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Stock Adjustment</h3><button class="btn icon ghost" onclick="closeModal('mo-stockadj')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:10px;margin-bottom:14px;font-size:11px;color:#92400E">
+    Use this to correct stock quantities after a physical count. Every change is logged with a reason for audit purposes.
+  </div>
+  <div class="fg"><label>Product *</label><select id="adj-prod" onchange="loadAdjCurrentQty()"><option value="">Select product...</option></select></div>
+  <div class="fr">
+    <div class="fg"><label>Current qty (system)</label><input id="adj-current" type="number" readonly style="background:#F3F4F6"></div>
+    <div class="fg"><label>New qty (physical count) *</label><input id="adj-new" type="number" min="0" oninput="calcAdjDiff()"></div>
+  </div>
+  <div class="fg">
+    <label>Difference</label>
+    <div id="adj-diff" style="padding:8px 10px;background:#F9FAFB;border:1px solid var(--bdr);border-radius:6px;font-weight:700;font-size:14px">—</div>
+  </div>
+  <div class="fg"><label>Reason *</label><select id="adj-reason">
+    <option>Physical count correction</option>
+    <option>Damaged / defective</option>
+    <option>Lost / stolen</option>
+    <option>Data entry error</option>
+    <option>System bug correction</option>
+    <option>Returned by customer</option>
+    <option>Other</option>
+  </select></div>
+  <div class="fg"><label>Notes</label><textarea id="adj-notes" rows="2" placeholder="Additional details..."></textarea></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-stockadj')">Cancel</button><button class="btn warn" onclick="saveStockAdjustment()">Apply Adjustment</button></div>
+</div></div>
+
+<!-- ADJUSTMENT HISTORY -->
+<div class="ov" id="mo-adj-history"><div class="modal" style="width:680px"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Stock Adjustment History</h3><button class="btn icon ghost" onclick="closeModal('mo-adj-history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="tw"><table><thead><tr><th>Date</th><th>Product</th><th>Old qty</th><th>New qty</th><th>Diff</th><th>Reason</th></tr></thead><tbody id="adj-history-tb"></tbody></table></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-adj-history')">Close</button></div>
+</div></div>
+
+<!-- INVOICE -->
+<div class="ov" id="mo-invoice"><div class="modal" style="width:580px"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>New Sales Invoice</h3><button class="btn icon ghost" onclick="closeModal('mo-invoice')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fr"><div class="fg"><label>Invoice #</label><input id="inv-num" placeholder="INV-001"></div><div class="fg"><label>Invoice currency</label><select id="inv-cur" onchange="calcInv()"></select><div style="font-size:10px;color:var(--tx2);margin-top:3px">Prices entered in this currency</div></div></div>
+  <div class="fr"><div class="fg"><label>Invoice date *</label><input id="inv-date" type="date"></div><div class="fg"><label>Due date</label><input id="inv-due" type="date"></div></div>
+  <div class="fg"><label>Customer *</label><select id="inv-cust"><option value="">Select customer…</option></select></div>
+  <div class="fsec">Line items</div>
+  <div id="inv-lines"></div>
+  <button class="btn" onclick="addInvLine()" style="width:100%;justify-content:center;margin-bottom:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add line</button>
+  <!-- DUAL CURRENCY TOTALS -->
+  <div style="background:#F9FAFB;border:1px solid var(--bdr);border-radius:6px;padding:12px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:12px">
+      <span style="color:var(--tx2)">Subtotal (before discount):</span>
+      <span id="inv-sub" style="font-weight:500">—</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:12px;align-items:center">
+      <span style="color:var(--tx2)">Invoice discount:</span>
+      <span style="display:flex;align-items:center;gap:6px">
+        <span id="inv-disc-amt" style="color:var(--red);font-size:11px"></span>
+        <input id="inv-disc" type="number" placeholder="0" min="0" max="100" step="0.1" oninput="calcInv()" style="width:60px;padding:4px 7px;border:1px solid var(--bdr2);border-radius:4px;font-size:12px;text-align:center"> %
+      </span>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:7px;font-size:12px">
+      <span style="color:#7C3AED;font-weight:600">Total commission:</span>
+      <span id="inv-com-total" style="color:#7C3AED;font-weight:600">—</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-weight:700;font-size:15px;padding-top:9px;border-top:2px solid var(--bdr);margin-top:2px">
+      <span id="inv-total-label">TOTAL (BRL R$):</span>
+      <span id="inv-total" style="color:var(--acc);font-size:16px">—</span>
+    </div>
+    <!-- BRL to USD conversion (hidden for USD invoices) -->
+    <div id="inv-conv-box" style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:10px;margin-top:10px">
+      <div style="font-size:10px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">🔄 BRL → USD Conversion</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:12px">
+        <span style="color:var(--tx2)">Exchange rate:</span>
+        <span style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:11px;color:var(--tx2)">$ 1 =</span>
+          <input id="inv-taxa" type="number" placeholder="5.50" min="0.01" step="0.01" value="5.50"
+            oninput="calcInv()"
+            style="width:75px;padding:4px 7px;border:1px solid #93C5FD;border-radius:4px;font-size:12px;text-align:center;background:#fff;font-weight:600;color:#1D4ED8">
+          <span style="font-size:11px;color:var(--tx2)">R$</span>
+        </span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;font-size:15px;padding-top:8px;border-top:1px solid #BFDBFE">
+        <span style="color:#1D4ED8">TOTAL (USD $):</span>
+        <span id="inv-total-usd" style="color:#1D4ED8;font-size:16px">—</span>
+      </div>
+    </div>
+  </div>
+  <div class="fg" style="margin-top:10px"><label>Status</label><select id="inv-status"><option value="pending">Pending</option><option value="partial">Partial</option><option value="paid">Paid</option></select></div>
+  <div class="fg"><label>Notes / Terms</label><textarea id="inv-notes" rows="2" placeholder="Payment terms, bank details…"></textarea></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-invoice')">Cancel</button><button class="btn pri" id="inv-save-btn" onclick="saveInvoice()">Save invoice</button></div>
+</div></div>
+
+<!-- PURCHASE -->
+<div class="ov" id="mo-purchase"><div class="modal" style="width:560px"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>New Purchase Order</h3><button class="btn icon ghost" onclick="closeModal('mo-purchase')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fr"><div class="fg"><label>PO number</label><input id="po-num" placeholder="PO-001"></div><div class="fg"><label>Currency</label><select id="po-cur"></select></div></div>
+  <div class="fr"><div class="fg"><label>Order date *</label><input id="po-date" type="date"></div><div class="fg"><label>Expected delivery</label><input id="po-del" type="date"></div></div>
+  <div class="fg"><label>Supplier *</label><select id="po-sup"><option value="">Select supplier…</option></select></div>
+  <div class="fsec">Line items</div>
+  <div id="po-lines"></div>
+  <button class="btn" onclick="addPoLine()" style="width:100%;justify-content:center;margin-bottom:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add line</button>
+  <div style="background:#F9FAFB;border:1px solid var(--bdr);border-radius:6px;padding:10px;display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>Total:</span><span id="po-total" style="color:var(--acc)">—</span></div>
+  <div class="fg" style="margin-top:10px"><label>Status</label><select id="po-status"><option value="pending">Pending</option><option value="partial">Partial</option><option value="paid">Paid</option></select></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-purchase')">Cancel</button><button class="btn pri" id="po-save-btn" onclick="savePurchase()">Save PO</button></div>
+</div></div>
+
+<!-- RECEIPT -->
+<div class="ov" id="mo-receipt"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Record Customer Receipt</h3><button class="btn icon ghost" onclick="closeModal('mo-receipt')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fr"><div class="fg"><label>Date *</label><input id="rc-date" type="date"></div><div class="fg"><label>Currency</label><select id="rc-cur"></select></div></div>
+  <div class="fg"><label>Customer *</label><select id="rc-cust" onchange="loadCustInv()"><option value="">Select customer…</option></select></div>
+  <div class="fg"><label>Invoice reference</label><select id="rc-inv"><option value="">General / unallocated</option></select></div>
+  <div class="fr"><div class="fg"><label>Amount received *</label><input id="rc-amt" type="number" placeholder="0.00" min="0"></div><div class="fg"><label>Method</label><select id="rc-mth"><option>Bank transfer</option><option>Cash</option><option>Card</option><option>Cheque</option><option>Crypto</option><option>Mobile money</option></select></div></div>
+  <div class="fg"><label>Reference / Note</label><input id="rc-note" placeholder="Bank ref, cheque no…"></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-receipt')">Cancel</button><button class="btn suc" onclick="saveReceipt()">Record receipt</button></div>
+</div></div>
+
+<!-- PAYMENT -->
+<div class="ov" id="mo-payment"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Record Supplier Payment</h3><button class="btn icon ghost" onclick="closeModal('mo-payment')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fr"><div class="fg"><label>Date *</label><input id="py-date" type="date"></div><div class="fg"><label>Currency</label><select id="py-cur"></select></div></div>
+  <div class="fg"><label>Supplier *</label><select id="py-sup" onchange="loadSuppPO()"><option value="">Select supplier…</option></select></div>
+  <div class="fg"><label>PO reference</label><select id="py-po"><option value="">General / unallocated</option></select></div>
+  <div class="fr"><div class="fg"><label>Amount paid *</label><input id="py-amt" type="number" placeholder="0.00" min="0"></div><div class="fg"><label>Method</label><select id="py-mth"><option>Bank transfer</option><option>Cash</option><option>Card</option><option>Cheque</option><option>Crypto</option><option>Mobile money</option></select></div></div>
+  <div class="fg"><label>Reference / Note</label><input id="py-note" placeholder="Bank ref, cheque no…"></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-payment')">Cancel</button><button class="btn warn" onclick="savePayment()">Record payment</button></div>
+</div></div>
+
+<!-- EXPENSE -->
+<div class="ov" id="mo-expense"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Add Expense</h3><button class="btn icon ghost" onclick="closeModal('mo-expense')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fr"><div class="fg"><label>Date *</label><input id="ex-date" type="date"></div><div class="fg"><label>Category</label><select id="ex-cat">
+  <option>Rent</option>
+  <option>Salaries &amp; wages</option>
+  <option>Utilities</option>
+  <option>Transport</option>
+  <option>Marketing</option>
+  <option>Office supplies</option>
+  <option>Insurance</option>
+  <option>Maintenance</option>
+  <option>Professional fees</option>
+  <option>Bank charges</option>
+  <option>Owner's Drawing</option>
+  <option>Dividends / Profit distribution</option>
+  <option>Partner withdrawal</option>
+  <option>Loan repayment</option>
+  <option>Other</option>
+</select></div></div>
+  <div class="fg"><label>Description *</label><input id="ex-desc" placeholder="Brief description"></div>
+  <div class="fg"><label>Payee</label><input id="ex-payee" placeholder="Who was paid"></div>
+  <div class="fr"><div class="fg"><label>Currency</label><select id="ex-cur"></select></div><div class="fg"><label>Amount *</label><input id="ex-amt" type="number" placeholder="0.00" min="0"></div></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-expense')">Cancel</button><button class="btn pri" onclick="saveExpense()">Save expense</button></div>
+</div></div>
+
+<!-- CAPITAL -->
+<div class="ov" id="mo-capital"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg>Add Capital Entry</h3><button class="btn icon ghost" onclick="closeModal('mo-capital')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fr"><div class="fg"><label>Date *</label><input id="cap-date" type="date"></div><div class="fg"><label>Type</label><select id="cap-type"><option value="injection">Capital injection (in)</option><option value="withdrawal">Withdrawal (out)</option></select></div></div>
+  <div class="fg"><label>Note</label><input id="cap-note" placeholder="e.g. Starting capital, additional top-up…"></div>
+  <div class="fr"><div class="fg"><label>Currency</label><select id="cap-cur"></select></div><div class="fg"><label>Amount *</label><input id="cap-amt" type="number" placeholder="0.00" min="0"></div></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-capital')">Cancel</button><button class="btn pri" onclick="saveCapital()">Save entry</button></div>
+</div></div>
+
+<!-- IMEI SEARCH PAGE -->
+<div class="page" id="page-imei">
+  <div class="ph">
+    <div><div class="pt">IMEI Search</div><div class="ps">Find which client received a specific iPhone</div></div>
+  </div>
+  <div class="card" style="max-width:640px;margin:0 auto 20px">
+    <div class="ch"><div class="ct">🔍 Search by IMEI / Serial Number</div></div>
+    <div style="padding:16px">
+      <div style="display:flex;gap:10px;margin-bottom:8px">
+        <input id="imei-search-input" type="text" placeholder="Enter IMEI or serial number (e.g. 352999001234567)"
+          style="flex:1;padding:10px 12px;border:2px solid var(--bdr2);border-radius:6px;font-size:13px;font-family:monospace"
+          oninput="searchIMEI(this.value)">
+        <button class="btn pri" onclick="searchIMEI(el('imei-search-input').value)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Search
+        </button>
+      </div>
+      <div style="font-size:11px;color:var(--tx2)">Partial IMEI works too — type at least 5 digits</div>
+    </div>
+  </div>
+  <div id="imei-results" style="max-width:640px;margin:0 auto"></div>
+</div>
+
+
+<script type="module" src="/main.js"></script>
+</body>
+</html>
