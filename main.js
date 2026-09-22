@@ -1152,8 +1152,13 @@ window.saveReceipt = async function() {
 }
 window.delReceipt = async function(id) {
   if(!confirm('Delete?'))return
-  await sb.from('receipts').delete().eq('id',id)
-  receipts=receipts.filter(r=>r.id!==id); renderReceipts(); toast('Deleted')
+  const r=receipts.find(x=>x.id===id); if(!r)return
+  const {error}=await sb.from('receipts').delete().eq('id',id)
+  if(error) return toast('Delete failed: '+error.message,false)
+  receipts=receipts.filter(x=>x.id!==id)
+  const cust=customers.find(c=>c.id===r.customer_id)
+  if(cust){cust.totalPaid=(cust.totalPaid||0)-r.base_amount; cust.balance=(cust.balance||0)+r.base_amount}
+  renderReceipts(); renderCustomers(); renderDash(); toast('Deleted')
 }
 
 // ── PAYMENTS ──────────────────────────────────────────────
@@ -1177,8 +1182,13 @@ window.savePayment = async function() {
 }
 window.delPayment = async function(id) {
   if(!confirm('Delete?'))return
-  await sb.from('payments').delete().eq('id',id)
-  payments=payments.filter(p=>p.id!==id); renderPayments(); toast('Deleted')
+  const p=payments.find(x=>x.id===id); if(!p)return
+  const {error}=await sb.from('payments').delete().eq('id',id)
+  if(error) return toast('Delete failed: '+error.message,false)
+  payments=payments.filter(x=>x.id!==id)
+  const supp=suppliers.find(s=>s.id===p.supplier_id)
+  if(supp){supp.totalPaid=(supp.totalPaid||0)-p.base_amount; supp.owed=(supp.owed||0)+p.base_amount}
+  renderPayments(); renderSuppliers(); renderDash(); toast('Deleted')
 }
 
 // ── EXPENSES ──────────────────────────────────────────────
