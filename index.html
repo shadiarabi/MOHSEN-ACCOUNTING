@@ -160,6 +160,7 @@ code{font-size:10px;background:#F3F4F6;padding:2px 5px;border-radius:3px;font-fa
     <div class="nsl">Finance</div>
     <div class="ni" onclick="nav(this,'expenses')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Expenses</span></div>
     <div class="ni" onclick="nav(this,'capital')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg><span>Capital</span></div>
+    <div class="ni" onclick="nav(this,'profitshare')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Profit Sharing</span></div>
     <div class="ni" onclick="nav(this,'reports')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Reports</span></div>
     <div class="ni" onclick="nav(this,'imei')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg><span>IMEI Search</span></div>
   </div>
@@ -337,6 +338,17 @@ code{font-size:10px;background:#F3F4F6;padding:2px 5px;border-radius:3px;font-fa
   </div>
   <div class="card"><div class="ch"><div class="ct">Capital ledger</div></div>
   <div class="tw"><table><thead><tr><th>Date</th><th>Type</th><th>Note</th><th>Currency</th><th>Amount</th><th></th></tr></thead><tbody id="cap-tb"></tbody></table></div></div>
+</div>
+
+<!-- PROFIT SHARING -->
+<div class="page" id="page-profitshare">
+  <div class="ph"><div><div class="pt">Profit Sharing</div><div class="ps">Net profit split among partners</div></div>
+  <button class="btn pri" onclick="openModal('mo-distribution')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Record distribution</button></div>
+  <div class="card" style="margin-bottom:16px"><div class="ch"><div class="ct">All-time net profit</div><div class="cs">Revenue − COGS − Expenses</div></div>
+  <div style="padding:0 14px 14px"><div class="kval" id="ps-total" style="font-size:26px">—</div></div></div>
+  <div id="ps-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px"></div>
+  <div class="card"><div class="ch"><div class="ct">Distribution history</div></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Partner</th><th>Note</th><th>Amount</th><th></th></tr></thead><tbody id="dist-tb"></tbody></table></div></div>
 </div>
 
 <!-- REPORTS -->
@@ -607,6 +619,16 @@ code{font-size:10px;background:#F3F4F6;padding:2px 5px;border-radius:3px;font-fa
   <div class="fr"><div class="fg"><label>Currency</label><select id="cap-cur"></select></div><div class="fg"><label>Amount *</label><input id="cap-amt" type="number" placeholder="0.00" min="0"></div></div>
 </div>
 <div class="mf"><button class="btn" onclick="closeModal('mo-capital')">Cancel</button><button class="btn pri" onclick="saveCapital()">Save entry</button></div>
+</div></div>
+
+<!-- PROFIT DISTRIBUTION -->
+<div class="ov" id="mo-distribution"><div class="modal"><div class="mh"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Record Distribution</h3><button class="btn icon ghost" onclick="closeModal('mo-distribution')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+<div class="mb">
+  <div class="fr"><div class="fg"><label>Partner *</label><select id="dist-partner"></select></div><div class="fg"><label>Date *</label><input id="dist-date" type="date"></div></div>
+  <div class="fg"><label>Note</label><input id="dist-note" placeholder="e.g. Monthly profit payout…"></div>
+  <div class="fr"><div class="fg"><label>Currency</label><select id="dist-cur"></select></div><div class="fg"><label>Amount *</label><input id="dist-amt" type="number" placeholder="0.00" min="0"></div></div>
+</div>
+<div class="mf"><button class="btn" onclick="closeModal('mo-distribution')">Cancel</button><button class="btn pri" onclick="saveDistribution()">Save distribution</button></div>
 </div></div>
 
 <!-- IMEI SEARCH PAGE -->
