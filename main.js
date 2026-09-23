@@ -18,7 +18,7 @@ const RATES = {USD:1,EUR:0.92,GBP:0.79,IDR:15800,BRL:4.97,JPY:149.5,CNY:7.24,AED
 // ── STATE ─────────────────────────────────────────────────
 let baseCur = 'USD'
 let settings = {company:'Mohsen',address:'',phone:'',email:'',vat_number:'',invoice_prefix:'INV-',po_prefix:'PO-',payment_terms:30}
-let customers=[], suppliers=[], products=[], invoices=[], purchases=[], receipts=[], payments=[], expenses=[], stockAdjustments=[], supplierAdjustments=[], inventoryBatches=[], capitalEntries=[]
+let customers=[], suppliers=[], products=[], invoices=[], purchases=[], receipts=[], payments=[], expenses=[], stockAdjustments=[], supplierAdjustments=[], inventoryBatches=[], capitalEntries=[], partners=[], partnerDistributions=[]
 // Date filter state
 let dashFrom='', dashTo='', invFrom='', invTo=''
 let invLines=[], poLines=[]
@@ -69,6 +69,7 @@ window.nav = function(elem, page) {
   if(page==='reports') renderReports()
   if(page==='expenses') renderExpenses()
   if(page==='capital') renderCapital()
+  if(page==='profitshare') renderProfitShare()
   if(page==='stock') renderStockStats()
 }
 window.ftbl = ftbl
@@ -117,6 +118,10 @@ window.openModal = function(id) {
   if(id==='mo-payment'){bcs('py-cur');el('py-date').value=d;pSel('py-sup',suppliers,'name','<option value="">Select supplier...</option>')}
   if(id==='mo-expense'){ delete el('mo-expense').dataset.editId; bcs('ex-cur');el('ex-date').value=d }
   if(id==='mo-capital'){ bcs('cap-cur');el('cap-date').value=d }
+  if(id==='mo-distribution'){
+    bcs('dist-cur');el('dist-date').value=d
+    const sel=el('dist-partner'); sel.innerHTML=partners.map(p=>`<option value="${p.id}">${p.name} (${p.percentage}%)</option>`).join('')
+  }
   if(id==='mo-stockadj'){
     pSel('adj-prod', products, 'name', '<option value="">Select product...</option>')
     el('adj-current').value=''; el('adj-new').value=''
@@ -1454,6 +1459,49 @@ function renderCapital() {
     <td style="font-weight:700;color:${c.type==='injection'?'var(--grn)':'var(--red)'}">${c.type==='injection'?'+':'-'}${fc(c.amount,c.currency)}</td>
     <td style="white-space:nowrap">${delBtn(`delCapital('${c.id}')`)}</td></tr>`).join('')
 }
+
+// ── PROFIT SHARING ───────────────────────────────────────────
+window.saveDistribution = async function() {
+  const pid=el('dist-partner').value; if(!pid)return alert('Select a partner')
+  const amt=parseFloat(el('dist-amt').value)||0
+  if(amt<=0) return alert('Enter an amount greater than 0')
+  const cur=el('dist-cur').value||baseCur
+  const partner=partners.find(p=>p.id===pid)
+  const row={partner_id:pid,partner_name:partner?.name,date:el('dist-date').value||td(),amount:amt,currency:cur,base_amount:toBase(amt,cur),note:el('dist-note').value}
+  const {data,error}=await sb.from('partner_distributions').insert(row).select().single()
+  if(error)return toast('Error: '+error.message,false)
+  partnerDistributions.unshift(data)
+  renderProfitShare(); closeModal('mo-distribution'); saved(); toast('Distribution recorded')
+  ;['dist-amt','dist-note'].forEach(id=>el(id).value='')
+}
+window.delDistribution = async function(id) {
+  if(!confirm('Delete this distribution?'))return
+  const {error}=await sb.from('partner_distributions').delete().eq('id',id)
+  if(error)return toast('Delete failed: '+error.message,false)
+  partnerDistributions=partnerDistributions.filter(d=>d.id!==id); renderProfitShare(); toast('Deleted')
+}
+function renderProfitShare() {
+  const wrap=el('ps-cards'); if(!wrap)return
+  const netProfit=netProfitAllTime()
+  el('ps-total').textContent=fmt(netProfit)
+  wrap.innerHTML=partners.map(p=>{
+    const entitled=netProfit*(p.percentage/100)
+    const paid=partnerDistributions.filter(d=>d.partner_id===p.id).reduce((a,d)=>a+(d.base_amount||d.amount||0),0)
+    const bal=entitled-paid
+    return `<div class="card"><div class="ch"><div class="ct">${p.name} <span style="color:var(--tx2);font-weight:400">(${p.percentage}%)</span></div></div>
+      <div style="padding:0 14px 14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div><div class="klbl">Entitled</div><div class="kval" style="font-size:18px">${fmt(entitled)}</div></div>
+        <div><div class="klbl">Paid out</div><div class="kval r" style="font-size:18px">${fmt(paid)}</div></div>
+        <div><div class="klbl">Balance owed</div><div class="kval ${bal>=0?'g':'r'}" style="font-size:18px">${fmt(bal)}</div></div>
+      </div></div>`
+  }).join('')
+  const tb=el('dist-tb'); if(!tb)return
+  if(!partnerDistributions.length){tb.innerHTML=erow(5,'No distributions yet');return}
+  tb.innerHTML=partnerDistributions.map(d=>`<tr>
+    <td>${d.date}</td><td>${d.partner_name}</td><td>${d.note||'—'}</td>
+    <td style="font-weight:700;color:var(--red)">${fc(d.amount,d.currency)}</td>
+    <td style="white-space:nowrap">${delBtn(`delDistribution('${d.id}')`)}</td></tr>`).join('')
+}
 function renderDash() {
   el('dash-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})
   // Date filter — read from DOM and save to state
@@ -2231,6 +2279,14 @@ function capitalTotals() {
   return {injected, withdrawn, net: injected-withdrawn}
 }
 
+// ── PROFIT SHARING (all-time net profit split among partners) ──
+function netProfitAllTime() {
+  const rev=invoices.reduce((a,i)=>a+i.base_amount,0)
+  const cogs=invoices.reduce((a,i)=>a+(i.cogs||0),0)
+  const exp=expenses.reduce((a,e)=>a+e.base_amount,0)
+  return rev-cogs-exp
+}
+
 // ── AUTOMATIC STOCK CONSISTENCY CHECK ──────────────────────
 // Runs after every data load. Reconciles total purchased - total sold + adjustments
 // against the actual current qty stored on each product. Flags mismatches so you
@@ -2354,7 +2410,7 @@ async function loadAll() {
     setDb(true,'Connected')
     const {data:sRows}=await sb.from('settings').select('*').limit(1)
     if(sRows?.length){Object.assign(settings,sRows[0]);baseCur=settings.base_currency||'USD';el('base-currency').value=baseCur;el('tco').textContent=settings.company}
-    const [c,s,p,inv,po,rc,py,ex,adj,sadj,batches,cap]=await Promise.all([
+    const [c,s,p,inv,po,rc,py,ex,adj,sadj,batches,cap,pt,pd]=await Promise.all([
       sb.from('customers').select('*').order('created_at'),
       sb.from('suppliers').select('*').order('created_at'),
       sb.from('products').select('*').order('created_at'),
@@ -2366,10 +2422,13 @@ async function loadAll() {
       sb.from('stock_adjustments').select('*').order('created_at',{ascending:false}),
       sb.from('supplier_adjustments').select('*').order('created_at',{ascending:false}),
       sb.from('inventory_batches').select('*').order('date',{ascending:true}).order('created_at',{ascending:true}),
-      sb.from('capital_entries').select('*').order('date',{ascending:false})
+      sb.from('capital_entries').select('*').order('date',{ascending:false}),
+      sb.from('partners').select('*').order('created_at'),
+      sb.from('partner_distributions').select('*').order('date',{ascending:false})
     ])
     customers=c.data||[]; suppliers=s.data||[]; products=p.data||[]
     invoices=inv.data||[]; purchases=po.data||[]; receipts=rc.data||[]; payments=py.data||[]; expenses=ex.data||[]
+    partners=pt.data||[]; partnerDistributions=pd.data||[]
     stockAdjustments=adj.data||[]; supplierAdjustments=sadj.data||[]; inventoryBatches=batches.data||[]; capitalEntries=cap.data||[]
     await computeBalances()
     renderAll(); updateBadges()
